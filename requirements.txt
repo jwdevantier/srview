@@ -1,0 +1,15 @@
+click==6.7
+coloredlogs==7.3
+Flask==0.12.2
+get==0.0.21
+humanfriendly==4.4.1
+itsdangerous==0.24
+Jinja2==2.9.6
+MarkupSafe==1.0
+pkg-resources==0.0.0
+post==0.0.13
+public==0.0.38
+query-string==0.0.12
+request==0.0.13
+setupfiles==0.0.50
+Werkzeug==0.12.2

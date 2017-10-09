@@ -13,7 +13,7 @@
         {% block footer %}
         FOOT!
         {% endblock footer %}
-        <script src="${url_for('get_asset', path='jquery-3.2.1.min.js')}"></script>
-        <script src="${url_for('get_asset', path='bootstrap.min.js')}"></script>
+        <script src="{{url_for('get_asset', path='jquery-3.2.1.min.js')}}"></script>
+        <script src="{{url_for('get_asset', path='bootstrap.min.js')}}"></script>
     </body>
 </html>

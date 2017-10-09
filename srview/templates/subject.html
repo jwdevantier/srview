@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% macro r_entry(label,value) %}
+<li class="list-group-item"><strong>{{label}}: </strong>{{value}}</li>
+{% endmacro %}
+
+{# render opt listbox item - will output nothing if 'label' undefined #}
+{% macro r_entry_opt(label,value) %}
+{% if key is defined %}
+{{ r_entry(label, value) }}
+{% endif %}
+{% endmacro %}
+
+{# render schema FQN - combines namespace & name if both set #}
+{% macro r_schema_fqn(ns, name) %}
+{% if ns is defined %}
+{{ r_entry("name", ns + "/" + name) }}
+{% else %}
+{{ r_entry("name", name) }}
+{% endif %}
+{% endmacro %}
+
+{# render 'fields' entry of schema of type 'record' #}
+{% macro r_schema_fields(fields) %}
+<ul class="list-group">
+    <li class="list-group-item active"><strong>Fields:</strong></li>
+    <li class="list-group-item">
+        <table class="table table-striped table-bordered">
+            <thead class="thead-inverse">
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Order</th>
+                    <th>Aliases</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in fields %}
+                <tr>
+                    <td>{{f.name}}</td>
+                    <td>{{f.type}}</td>
+                    <td>{{f.default | default("<unset>")}}</td>
+                    <td>{{f.order | default("<unset>")}}</td>
+                    <td>{{f.aliases | default("[]")}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </li>
+</ul>
+{% endmacro %}
+
+{# render a schema of type 'record' #}
+{% macro r_schema_record(s) %}
+<ul class="list-group">
+{{ r_schema_fqn(s.namespace, s.name) }}
+{{ r_entry("type", s.type) }}
+
+{{r_entry_opt("doc", s.doc)}}
+{{r_entry_opt("aliases", s.aliases)}}
+{{r_schema_fields(s.fields)}}
+</ul>
+{% endmacro %}
+
+{% macro r_schema_enum(s) %}
+<ul class="list-group">
+    {{r_schema_fqn(s.namespace, s.name)}}
+    {{ r_entry("type", s.type) }}
+    {{r_entry_opt("doc", s.doc)}}
+    {{r_entry_opt("aliases", s.aliases)}}
+    {{ r_entry("symbols", s.symbols) }}
+</ul>
+{% endmacro %}
+
+{% macro r_schema_array(s) %}
+<ul class="list-group">
+    {{ r_entry("type", s.type) }}
+    {{r_entry_opt("items", s.items)}} {# TODO - flatten schema #}
+</ul>
+{% endmacro %}
+
+{% macro r_schema_map(s) %}
+<ul class="list-group">
+    {{ r_entry("type", s.type) }}
+    <ul class="list-group">
+        <li class="list-group-item active"><strong>Entries:</strong></li>
+        {# TODO - flatten schema #}
+        {% for entry_key in s.items %}
+            {{r_entry(entry_key, s.items[entry_key])}}
+        {% endfor %}
+    </ul>
+</ul>
+{% endmacro %}
+
+{# Branch out into rendering the concrete schema type #}
+{% macro r_schema(s) %}
+{% if s is string %}
+{{ r_entry("schema", s)}}
+{% else %}
+  {% if s.type == "record" %}
+  {{ r_schema_record(s) }}
+  {% elif s.type == "enum" %}
+  {{ r_schema_enum(s) }}
+  {% elif s.type == "array" %}
+  {{ r_schema_array(s) }}
+  {% elif s.type == "map" %}
+  {{ r_schema_map(s) }}
+  {% endif %}
+{% endif %}
+{% endmacro %}
+
+{% block title %}Schema{% endblock %}
+{% block content %}
+<h1>Subjects</h1>
+<ul class="list-group">
+        {{ r_schema(subject.schema) }}
+</ul>
+{% endblock %}
